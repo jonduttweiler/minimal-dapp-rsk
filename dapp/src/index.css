@@ -11,3 +11,12 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+@font-face {
+  font-family: 'Noto Sans';
+  src: local('Noto Sans'), url(./assets/fonts/Noto_Sans/NotoSans-Bold.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Rye';
+  src: local('Rye'), url(./assets/fonts/Rye/Rye-Regular.ttf) format('truetype');
+}

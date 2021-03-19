@@ -46,15 +46,27 @@ function SimpleStorage() {
       const value = parseInt(inputValue);
       setLoading(true);
       const promiEvent = contract.methods.set(value).send({ from: account });
-      promiEvent.once('sending', function(payload){ setTxStatus("sending") })
-                .once('sent', function(payload){ setTxStatus("sent") })
-                .once('transactionHash', function(hash){ setTxStatus("transactionHash") })
-                .once('receipt', function(receipt){ setTxStatus("receipt") })
-                .on('confirmation', function(confNumber, receipt, latestBlockHash){ setTxStatus("confirmed") })
-                .on('error', function(error){ setTxStatus("error") })
+      promiEvent
+        .once("sending", (payload) => {
+          setTxStatus("sending");
+        })
+        .once("sent", (payload) => {
+          setTxStatus("sent");
+        })
+        .once("transactionHash", (hash) => {
+          setTxStatus("transactionHash");
+        })
+        .once("receipt", (receipt) => {
+          setTxStatus("receipt");
+        })
+        .on("confirmation", (confNumber, receipt, latestBlockHash) => {
+          setTxStatus("confirmed");
+        })
+        .on("error", (error) => {
+          setTxStatus("error");
+        });
 
       await promiEvent;
-
     } catch (err) {
       console.log(err);
     }
@@ -63,8 +75,16 @@ function SimpleStorage() {
 
   return (
     <Flex column>
-      <div>{address}</div>
-      <div>value: {value}</div>
+      <div>
+        <div>Contract address:</div>
+        <div>{address}</div>
+      </div>
+
+      <Flex column center style={{ border: "2px solid tomato" }}>
+        <div style={{textAlign:"center"}}>value:</div>
+        <div style={{textAlign:"center"}}>{value}</div>
+      </Flex>
+      
       <Flex row>
         <input
           style={{ textAlign: "right" }}

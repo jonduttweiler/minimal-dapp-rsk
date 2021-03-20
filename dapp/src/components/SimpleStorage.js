@@ -30,7 +30,6 @@ const Root = styled.div`
   justify-content: center;
 `;
 const Container = styled.div`
-  border: 2px solid tomato;
   padding: 12px;
   width: fit-content;
 `;

@@ -5,72 +5,63 @@ import {
   CircularProgress,
   Grid,
   Container,
-  Button,
-  withStyles,
 } from "@material-ui/core";
 
-import { TransactionStatus } from "./styled";
+import { Title, NetworkIndicator, TransactionStatus, CustomButton as Button } from "./styled";
 import SimpleStorageArtifact from "../artifacts/SimpleStorage.json";
-
-const CustomButton = withStyles({
-  root: {
-    boxShadow: "none",
-    textTransform: "none",
-    fontSize: 16,
-    padding: "6px 12px",
-    border: "1px solid",
-    lineHeight: 1.5,
-    backgroundColor: "#0063cc",
-    borderColor: "#0063cc",
-    fontFamily: [
-      "-apple-system",
-      "BlinkMacSystemFont",
-      '"Segoe UI"',
-      "Roboto",
-      '"Helvetica Neue"',
-      "Arial",
-      "sans-serif",
-      '"Apple Color Emoji"',
-      '"Segoe UI Emoji"',
-      '"Segoe UI Symbol"',
-    ].join(","),
-    "&:hover": {
-      backgroundColor: "#0069d9",
-      borderColor: "#0062cc",
-      boxShadow: "none",
-    },
-    "&:active": {
-      boxShadow: "none",
-      backgroundColor: "#0062cc",
-      borderColor: "#005cbf",
-    },
-    "&:focus": {
-      boxShadow: "0 0 0 0.2rem rgba(0,123,255,.5)",
-    },
-  },
-})(Button);
 
 const contractAbi = SimpleStorageArtifact.abi;
 
+const networks={
+  1: "Ethereum Mainnet",
+  3: "Ropsten Test Network",
+  4: "Rinkeby Test Network",
+  5: "Goerli Test Network",
+  30: "RSK Mainnet",
+  31: "RSK Testnet",
+  42: "Kovan Test Network",
+}
+
+
 function SimpleStorage() {
+  const web3Ref = useRef();
   const contractRef = useRef();
   const accountsRef = useRef();
+  const [networkId, setNetworkId] = useState();
 
   const [address, setAddress] = useState(
     "0x107737cE1cdA492BE0398A82645C153c1B9c7Dc3"
   );
   const [value, setValue] = useState();
   const [loading, setLoading] = useState(false);
-  const [txStatus, setTxStatus] = useState({status:"",metadata:""});
+  
+  const [txStatus, setTxStatus] = useState({ status: "", metadata: "" });
   const [inputValue, setInputValue] = useState("");
 
-  useEffect(() => {
-    async function initSmartContract() {
-      try {
-        const web3 = new Web3(window.ethereum);
-        await window.ethereum.enable();
-        accountsRef.current = await web3.eth.getAccounts();
+  async function connect(){
+      const web3 = new Web3(window.ethereum);
+      await window.ethereum.enable();
+      web3Ref.current = web3;
+      const networkId = await web3.eth.net.getId();
+      setNetworkId(networkId)
+      return web3;
+  }
 
+  async function getAccounts(){
+    const web3 = web3Ref.current;
+    const accounts = await web3.eth.getAccounts();
+     accountsRef.current = accounts;
+     return accounts;
+  }
+
+
+  useEffect(() => {
+    async function initContract() {
+      try {
+        const web3 = await connect();
+        window.web3x = web3;
+        getAccounts();
+        
         const contract = new web3.eth.Contract(contractAbi, address);
         contractRef.current = contract;
         const value = await contract.methods.get().call();
@@ -80,7 +71,7 @@ function SimpleStorage() {
       }
     }
 
-    initSmartContract();
+    initContract();
   }, [address]);
 
   async function setNewValue() {
@@ -92,20 +83,29 @@ function SimpleStorage() {
       const promiEvent = contract.methods.set(value).send({ from: account });
       promiEvent
         .once("sending", (payload) => {
-          setTxStatus({status:"sending"});
+          setTxStatus({ status: "sending" });
         })
         .once("sent", (payload) => {
-          setTxStatus({status:"sent"});
+          setTxStatus({ status: "sent" });
         })
         .once("transactionHash", (hash) => {
-          setTxStatus({status:"transactionHash", metadata:`HASH: ${hash}`});
+          setTxStatus({ status: "transactionHash", metadata: `HASH: ${hash}` });
         })
         .once("receipt", (receipt) => {
-          setTxStatus({status:"receipt", metadata: JSON.stringify(receipt,null,3)});
-          
+          setTxStatus({
+            status: "receipt",
+            metadata: JSON.stringify(receipt, null, 3),
+          });
         })
         .on("confirmation", (confNumber, receipt, latestBlockHash) => {
-          setTxStatus({status:"confirmed", metadata:`confNumber: ${confNumber},receipt:${ JSON.stringify(receipt,null,3)}, latestBlockHash:${latestBlockHash}`});
+          setTxStatus({
+            status: "confirmed",
+            metadata: `confNumber: ${confNumber},receipt:${JSON.stringify(
+              receipt,
+              null,
+              3
+            )}, latestBlockHash:${latestBlockHash}`,
+          });
         })
         .on("error", (error) => {
           setTxStatus("error");
@@ -127,10 +127,16 @@ function SimpleStorage() {
         alignItems="center"
         spacing={3}
       >
-        <Grid item>Simple dapp</Grid>
+        <Grid item><Title>Simple dapp</Title></Grid>
         <Grid item>
           <div>Contract address:</div>
           <div>{address}</div>
+          <Grid item>
+            <NetworkIndicator>Target network: RSK Testnet </NetworkIndicator> 
+            <NetworkIndicator>Current network: {networks[networkId] || networkId}</NetworkIndicator>
+
+            
+          </Grid>
         </Grid>
         <Grid item>
           <div>Value:</div>
@@ -152,14 +158,14 @@ function SimpleStorage() {
             />
           </Grid>
           <Grid item>
-            <CustomButton
+            <Button
               disabled={loading}
               variant="contained"
               color="primary"
               onClick={setNewValue}
             >
               Set value
-            </CustomButton>
+            </Button>
           </Grid>
           <Grid item>
             <Grid container direction="row" justify="center">
@@ -174,13 +180,14 @@ function SimpleStorage() {
           </Grid>
           <Grid item>
             <Grid container direction="column">
-              <Grid item style={{
-                maxWidth:"100%", 
-                overflow:"auto",
-                backgroundColor:"rgba(200,200,200,0.8)",
-                
-
-                }}>
+              <Grid
+                item
+                style={{
+                  maxWidth: "100%",
+                  overflow: "auto",
+                  backgroundColor: "rgba(200,200,200,0.8)",
+                }}
+              >
                 {txStatus?.metadata}
               </Grid>
             </Grid>

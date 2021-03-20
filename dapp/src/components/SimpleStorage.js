@@ -23,6 +23,16 @@ const networks = {
   42: "Kovan Test Network",
 };
 
+const tokens = {
+  30: "R-BTC",
+  31: "tR-BTC",
+  1: "ETH",
+  3: "ETH",
+  4: "ETH",
+  5: "ETH",
+  42: "ETH"
+}
+
 const Root = styled.div`
   box-sizing: border-box;
   display: flex;
@@ -43,6 +53,8 @@ function SimpleStorage() {
   const [address, setAddress] = useState(
     "0x107737cE1cdA492BE0398A82645C153c1B9c7Dc3"
   );
+  const [accounts,setAccounts] = useState([]);
+  const [balance, setBalance] = useState([]);
   const [value, setValue] = useState();
   const [loading, setLoading] = useState(false);
 
@@ -54,7 +66,10 @@ function SimpleStorage() {
 
   async function connect() {
     const web3 = new Web3(window.ethereum);
+    window.cweb3 = web3;
     await window.ethereum.enable();
+
+    
     web3Ref.current = web3;
     const networkId = await web3.eth.net.getId();
     setNetworkId(networkId);
@@ -65,6 +80,10 @@ function SimpleStorage() {
     const web3 = web3Ref.current;
     const accounts = await web3.eth.getAccounts();
     accountsRef.current = accounts;
+    setAccounts(accounts);
+    let balance = await web3.eth.getBalance(accounts[0]);
+    window.balance = balance;
+    setBalance(balance);
     return accounts;
   }
   
@@ -96,6 +115,12 @@ function SimpleStorage() {
 
     initContract();
   }, [address]);
+
+  useEffect(() => {
+    const web3 = web3Ref.current;
+
+
+  },[balance])
 
   async function setNewValue() {
     try {
@@ -157,7 +182,22 @@ function SimpleStorage() {
           <Grid item>
             <Title>Simple dapp</Title>
           </Grid>
-          <Grid item>
+     
+          <Grid item >
+            <Grid item>Accounts:</Grid>
+            <Flex j="center" p="5px">
+              {accounts.map((account,idx) => <div key={idx}>{account}</div>)}
+            </Flex>
+            <Grid item>Balance:</Grid>
+              {balance && (
+                <div>
+                <strong>{web3Ref?.current?.utils.fromWei(balance)}</strong> &nbsp;
+                {tokens[networkId]}
+                </div>
+              )}
+          </Grid>
+
+               <Grid item>
             <div>Contract address: ({targetNetwork})</div>
             <a
               href={`https://explorer.testnet.rsk.co/address/${address}`}
@@ -172,12 +212,12 @@ function SimpleStorage() {
             <Grid item>
               <Container>
                 <Alert severity="warning">
-                  <AlertTitle>Red incorrecta</AlertTitle>
+                  <AlertTitle>Incorrect Network</AlertTitle>
                   <div>
                     Current network: <i>{currentNetwork}</i>
                   </div>
                   <div>
-                    Target network: <strong>{targetNetwork}</strong>.
+                    Switch to: <strong>{targetNetwork}</strong>.
                   </div>
                 </Alert>
               </Container>
@@ -185,11 +225,13 @@ function SimpleStorage() {
           )}
 
           <Grid item >
+          </Grid>
+
+          <Grid item >
             <Grid item>Value:</Grid>
             <Flex j="center" p="5px">
               <Value>{value}</Value>
             </Flex>
-            
           </Grid>
           <Grid container direction="column" alignItems="center" spacing={2}>
             <Grid item>

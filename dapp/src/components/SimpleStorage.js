@@ -5,7 +5,13 @@ import styled from "styled-components";
 import { CircularProgress, Grid } from "@material-ui/core";
 import { Alert, AlertTitle } from "@material-ui/lab";
 
-import { Title, Value, TransactionStatus, CustomButton as Button, Flex } from "./styled";
+import {
+  Title,
+  Value,
+  TransactionStatus,
+  CustomButton as Button,
+  Flex,
+} from "./styled";
 
 import SimpleStorageArtifact from "../artifacts/SimpleStorage.json";
 import StringifiedObject from "./StringifiedObject";
@@ -30,8 +36,8 @@ const tokens = {
   3: "ETH",
   4: "ETH",
   5: "ETH",
-  42: "ETH"
-}
+  42: "ETH",
+};
 
 const Root = styled.div`
   box-sizing: border-box;
@@ -53,8 +59,8 @@ function SimpleStorage() {
   const [address, setAddress] = useState(
     "0x107737cE1cdA492BE0398A82645C153c1B9c7Dc3"
   );
-  const [accounts,setAccounts] = useState([]);
-  const [balance, setBalance] = useState([]);
+  const [accounts, setAccounts] = useState([]);
+  const [balance, setBalance] = useState();
   const [value, setValue] = useState();
   const [loading, setLoading] = useState(false);
 
@@ -64,16 +70,26 @@ function SimpleStorage() {
   const targetNetwork = networks[targetNetworkId];
   const currentNetwork = networks[networkId] || networkId;
 
-  async function connect() { //TODO: view https://stackoverflow.com/a/53951477
-    const web3 = new Web3(window.ethereum);
-    window.cweb3 = web3;
-    await window.ethereum.enable();
+  async function connect() {
+    let web3;
+    if (window.ethereum) {
+      try {
+        web3 = new Web3(window.ethereum);
+        await window.ethereum.enable();
+        console.log("access granted");
+      } catch (err) {
+        console.log("access denied");
+      }
+    } else if (window.web3) {
+      web3 = new Web3(window.web3.currentProvider);
+    }
 
-    
-    web3Ref.current = web3;
-    const networkId = await web3.eth.net.getId();
-    setNetworkId(networkId);
-    return web3;
+    if (web3) {
+      web3Ref.current = web3;
+      const networkId = await web3.eth.net.getId();
+      setNetworkId(networkId);
+      return web3;
+    }
   }
 
   async function getAccounts() {
@@ -86,14 +102,14 @@ function SimpleStorage() {
     setBalance(balance);
     return accounts;
   }
-  
-  async function refreshValue(){
-      const contract = contractRef.current;
-      const value = await contract.methods.get().call();
-       setValue(value);
+
+  async function refreshValue() {
+    const contract = contractRef.current;
+    const value = await contract.methods.get().call();
+    setValue(value);
   }
 
-  function clearTxStatus(){
+  function clearTxStatus() {
     setTxStatus({ status: "", metadata: "" });
   }
 
@@ -115,12 +131,6 @@ function SimpleStorage() {
 
     initContract();
   }, [address]);
-
-  useEffect(() => {
-    const web3 = web3Ref.current;
-
-
-  },[balance])
 
   async function setNewValue() {
     try {
@@ -152,9 +162,8 @@ function SimpleStorage() {
             metadata: {
               confNumber,
               receipt,
-              latestBlockHash
-            }
-            
+              latestBlockHash,
+            },
           });
         })
         .on("error", (error) => {
@@ -182,22 +191,25 @@ function SimpleStorage() {
           <Grid item>
             <Title>Simple dapp</Title>
           </Grid>
-     
-          <Grid item >
+
+          <Grid item>
             <Grid item>Accounts:</Grid>
             <Flex j="center" p="5px">
-              {accounts.map((account,idx) => <div key={idx}>{account}</div>)}
+              {accounts.map((account, idx) => (
+                <div key={idx}>{account}</div>
+              ))}
             </Flex>
             <Grid item>Balance:</Grid>
-              {balance && (
-                <div>
-                <strong>{web3Ref?.current?.utils.fromWei(balance)}</strong> &nbsp;
+            {balance && (
+              <div>
+                <strong>{web3Ref?.current?.utils.fromWei(balance)}</strong>
+                &nbsp;
                 {tokens[networkId]}
-                </div>
-              )}
+              </div>
+            )}
           </Grid>
 
-               <Grid item>
+          <Grid item>
             <div>Contract address: ({targetNetwork})</div>
             <a
               href={`https://explorer.testnet.rsk.co/address/${address}`}
@@ -224,10 +236,7 @@ function SimpleStorage() {
             </Grid>
           )}
 
-          <Grid item >
-          </Grid>
-
-          <Grid item >
+          <Grid item>
             <Grid item>Value:</Grid>
             <Flex j="center" p="5px">
               <Value>{value}</Value>
@@ -274,19 +283,20 @@ function SimpleStorage() {
                 <Grid
                   item
                   style={{
-                    padding:"5px 15px",
+                    padding: "5px 15px",
                     maxWidth: "100%",
                     overflow: "auto",
                     backgroundColor: "rgba(0,0,0,0.8)",
-                    color:"white"
+                    color: "white",
                   }}
                 >
-                  <div style={{width:"530px"}}>
-                    <StringifiedObject object={txStatus?.metadata}></StringifiedObject>
+                  <div style={{ width: "530px" }}>
+                    <StringifiedObject
+                      object={txStatus?.metadata}
+                    ></StringifiedObject>
                     {/* {txStatus?.metadata} */}
                   </div>
                 </Grid>
-          
               </Grid>
             </Grid>
           </Grid>

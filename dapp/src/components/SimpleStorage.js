@@ -64,7 +64,7 @@ function SimpleStorage() {
   const targetNetwork = networks[targetNetworkId];
   const currentNetwork = networks[networkId] || networkId;
 
-  async function connect() {
+  async function connect() { //TODO: view https://stackoverflow.com/a/53951477
     const web3 = new Web3(window.ethereum);
     window.cweb3 = web3;
     await window.ethereum.enable();

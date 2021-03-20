@@ -11,6 +11,11 @@ export const Title = styled.div`
   letter-spacing:0.4px;
 `
 
+export const Value = styled.span`
+  font-family: "Montserrat";
+  font-size:18px;
+  font-weight:bold;
+`
 
 export const TransactionStatus = styled.div`
   padding:5px 25px;
@@ -29,7 +34,9 @@ export const Div = styled.div`
   ${props => props.absolute && `position: absolute;`}
   ${props => props.relative && `position: relative;`}
   ${props => props.m && `margin: ${props.m};`}
-  ${props => props.p && `padding: ${props.padding};`}
+  ${props => props.margin && `margin: ${props.margin};`}
+  ${props => props.p && `padding: ${props.p};`}
+  ${props => props.padding && `padding: ${props.padding};`}
   
 `
 

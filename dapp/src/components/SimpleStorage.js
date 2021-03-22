@@ -2,15 +2,16 @@ import Web3 from "web3";
 import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 
-import { CircularProgress, Grid } from "@material-ui/core";
+import { CircularProgress, Grid, Button } from "@material-ui/core";
 import { Alert, AlertTitle } from "@material-ui/lab";
 
 import {
   Title,
   Value,
   TransactionStatus,
-  CustomButton as Button,
+  CustomButton as CButton,
   Flex,
+  ConnectButton,
 } from "./styled";
 
 import SimpleStorageArtifact from "../artifacts/SimpleStorage.json";
@@ -54,11 +55,13 @@ function SimpleStorage() {
   const web3Ref = useRef();
   const contractRef = useRef();
   const accountsRef = useRef();
+
   const [networkId, setNetworkId] = useState();
 
   const [address, setAddress] = useState(
     "0x107737cE1cdA492BE0398A82645C153c1B9c7Dc3"
   );
+  const [connected, setConnected] = useState(false);
   const [accounts, setAccounts] = useState([]);
   const [balance, setBalance] = useState();
   const [value, setValue] = useState();
@@ -74,11 +77,18 @@ function SimpleStorage() {
     let web3;
     if (window.ethereum) {
       try {
-        web3 = new Web3(window.ethereum);
-        await window.ethereum.enable();
+        const ethereum = window.ethereum;
+        web3 = new Web3(ethereum);
+        await ethereum.enable();
         console.log("access granted");
+        setConnected(true);
+
+        ethereum.on("accountsChanged", function (accounts) {
+          setAccounts(accounts);
+        });
       } catch (err) {
         console.log("access denied");
+        setConnected(false);
       }
     } else if (window.web3) {
       web3 = new Web3(window.web3.currentProvider);
@@ -97,11 +107,18 @@ function SimpleStorage() {
     const accounts = await web3.eth.getAccounts();
     accountsRef.current = accounts;
     setAccounts(accounts);
-    let balance = await web3.eth.getBalance(accounts[0]);
-    window.balance = balance;
-    setBalance(balance);
     return accounts;
   }
+  useEffect(() => {
+    async function updateBalance() {
+      const web3 = web3Ref.current;
+      if (web3) {
+        const balance = await web3.eth.getBalance(accounts[0]);
+        setBalance(balance);
+      }
+    }
+    updateBalance();
+  }, [accounts]);
 
   async function refreshValue() {
     const contract = contractRef.current;
@@ -113,24 +130,24 @@ function SimpleStorage() {
     setTxStatus({ status: "", metadata: "" });
   }
 
-  useEffect(() => {
-    async function initContract() {
-      try {
-        const web3 = await connect();
-        window.web3x = web3;
-        getAccounts();
-
-        const contract = new web3.eth.Contract(contractAbi, address);
-        contractRef.current = contract;
-        const value = await contract.methods.get().call();
-        setValue(value);
-      } catch (err) {
-        console.log(err);
-      }
+  async function initContract() {
+    try {
+      let web3 = web3Ref.current ? web3Ref.current : await connect();
+      getAccounts();
+      const contract = new web3.eth.Contract(contractAbi, address);
+      contractRef.current = contract;
+      const value = await contract.methods.get().call();
+      setValue(value);
+    } catch (err) {
+      console.log(err);
     }
+  }
 
-    initContract();
-  }, [address]);
+  useEffect(() => {
+    if (connected) {
+      initContract();
+    }
+  }, [connected]);
 
   async function setNewValue() {
     try {
@@ -190,6 +207,18 @@ function SimpleStorage() {
         >
           <Grid item>
             <Title>Simple dapp</Title>
+          </Grid>
+          <Grid item>
+            {connected && (
+              <Alert severity="success" variant="outlined">
+                Connected
+              </Alert>
+            )}
+            {!connected && (
+              <ConnectButton outlined color="primary" onClick={connect}>
+                connect
+              </ConnectButton>
+            )}
           </Grid>
 
           <Grid item>
@@ -258,14 +287,14 @@ function SimpleStorage() {
               />
             </Grid>
             <Grid item>
-              <Button
-                disabled={loading}
+              <CButton
+                disabled={loading || !connected}
                 variant="contained"
                 color="primary"
                 onClick={setNewValue}
               >
                 Set value
-              </Button>
+              </CButton>
             </Grid>
             <Grid item>
               <Grid container direction="row" justify="center">

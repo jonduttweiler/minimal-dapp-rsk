@@ -6,6 +6,7 @@ import { CircularProgress, Grid } from "@material-ui/core";
 import { Alert, AlertTitle } from "@material-ui/lab";
 
 import {
+  Div,
   Title,
   Value,
   TransactionStatus,
@@ -81,14 +82,27 @@ function SimpleStorage() {
         //https://eips.ethereum.org/EIPS/eip-1102
         //https://eips.ethereum.org/EIPS/eip-1193
         const response = await ethereum.request({
-          method:'eth_requestAccounts'
+          method: "eth_requestAccounts",
         });
         const accounts = response || [];
         setAccounts(accounts);
         accountsRef.current = accounts;
         console.log("access granted");
         setConnected(true);
-        ethereum.on("accountsChanged", function (accounts) {
+
+        ethereum.on("connect", () => {
+          console.log("%cconnect", "color:green");
+          setConnected(true);
+        });
+        ethereum.on("disconnect", () => {
+          setConnected(false);
+        });
+
+        ethereum.on("chainChanged", (chainIdHex) => {
+          setNetworkId(parseInt(chainIdHex, 16));
+        });
+
+        ethereum.on("accountsChanged", (accounts) => {
           setAccounts(accounts);
         });
       } catch (err) {
@@ -101,7 +115,7 @@ function SimpleStorage() {
 
     if (web3) {
       web3Ref.current = web3;
-      const networkId = await web3.eth.net.getId();
+      const networkId = await web3.eth.net.getId(); //Esto creo que no se hace mas asi, hay que pedirselo al provider
       setNetworkId(networkId);
       return web3;
     }
@@ -109,13 +123,12 @@ function SimpleStorage() {
 
   async function getAccounts() {
     //ver si ya hay algo en accounts
-    if(!accounts){
-    const web3 = web3Ref.current;
-    const accounts = await web3.eth.getAccounts();
-    accountsRef.current = accounts;
-    setAccounts(accounts);
-    return accounts;
-
+    if (!accounts) {
+      const web3 = web3Ref.current;
+      const accounts = await web3.eth.getAccounts();
+      accountsRef.current = accounts;
+      setAccounts(accounts);
+      return accounts;
     }
   }
   useEffect(() => {
@@ -231,6 +244,27 @@ function SimpleStorage() {
           </Grid>
 
           <Grid item>
+            <Container>
+              <div>
+                Current network: <i>{currentNetwork}</i>
+              </div>
+              <div>
+                Target network: <i>{targetNetwork}</i>.
+              </div>
+              {networkId && networkId !== targetNetworkId && (
+                <Div mt="15px">
+                  <Alert severity="warning">
+                    <AlertTitle>Incorrect network</AlertTitle>
+                    <div>
+                      Please, switch to <strong>{targetNetwork}</strong>
+                    </div>
+                  </Alert>
+                </Div>
+              )}
+            </Container>
+          </Grid>
+
+          <Grid item>
             <Grid item>Accounts:</Grid>
             <Flex j="center" p="5px">
               {accounts.map((account, idx) => (
@@ -247,6 +281,7 @@ function SimpleStorage() {
             )}
           </Grid>
 
+          {/* Separator para el contract __ */}
           <Grid item>
             <div>Contract address: ({targetNetwork})</div>
             <a
@@ -257,22 +292,6 @@ function SimpleStorage() {
               {address}
             </a>
           </Grid>
-
-          {networkId && networkId !== targetNetworkId && (
-            <Grid item>
-              <Container>
-                <Alert severity="warning">
-                  <AlertTitle>Incorrect Network</AlertTitle>
-                  <div>
-                    Current network: <i>{currentNetwork}</i>
-                  </div>
-                  <div>
-                    Switch to: <strong>{targetNetwork}</strong>.
-                  </div>
-                </Alert>
-              </Container>
-            </Grid>
-          )}
 
           <Grid item>
             <Grid item>Value:</Grid>

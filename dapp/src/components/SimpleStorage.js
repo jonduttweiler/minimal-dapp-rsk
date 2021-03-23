@@ -2,14 +2,14 @@ import Web3 from "web3";
 import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 
-import { CircularProgress, Grid, Button } from "@material-ui/core";
+import { CircularProgress, Grid } from "@material-ui/core";
 import { Alert, AlertTitle } from "@material-ui/lab";
 
 import {
   Title,
   Value,
   TransactionStatus,
-  CustomButton as CButton,
+  Button,
   Flex,
   ConnectButton,
 } from "./styled";
@@ -58,9 +58,8 @@ function SimpleStorage() {
 
   const [networkId, setNetworkId] = useState();
 
-  const [address, setAddress] = useState(
-    "0x107737cE1cdA492BE0398A82645C153c1B9c7Dc3"
-  );
+  const address = "0x107737cE1cdA492BE0398A82645C153c1B9c7Dc3";
+
   const [connected, setConnected] = useState(false);
   const [accounts, setAccounts] = useState([]);
   const [balance, setBalance] = useState();
@@ -79,10 +78,16 @@ function SimpleStorage() {
       try {
         const ethereum = window.ethereum;
         web3 = new Web3(ethereum);
-        await ethereum.enable();
+        //https://eips.ethereum.org/EIPS/eip-1102
+        //https://eips.ethereum.org/EIPS/eip-1193
+        const response = await ethereum.request({
+          method:'eth_requestAccounts'
+        });
+        const accounts = response || [];
+        setAccounts(accounts);
+        accountsRef.current = accounts;
         console.log("access granted");
         setConnected(true);
-
         ethereum.on("accountsChanged", function (accounts) {
           setAccounts(accounts);
         });
@@ -103,11 +108,15 @@ function SimpleStorage() {
   }
 
   async function getAccounts() {
+    //ver si ya hay algo en accounts
+    if(!accounts){
     const web3 = web3Ref.current;
     const accounts = await web3.eth.getAccounts();
     accountsRef.current = accounts;
     setAccounts(accounts);
     return accounts;
+
+    }
   }
   useEffect(() => {
     async function updateBalance() {
@@ -287,14 +296,14 @@ function SimpleStorage() {
               />
             </Grid>
             <Grid item>
-              <CButton
+              <Button
                 disabled={loading || !connected}
                 variant="contained"
                 color="primary"
                 onClick={setNewValue}
               >
                 Set value
-              </CButton>
+              </Button>
             </Grid>
             <Grid item>
               <Grid container direction="row" justify="center">

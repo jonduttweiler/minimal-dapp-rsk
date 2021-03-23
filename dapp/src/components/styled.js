@@ -1,5 +1,4 @@
 import styled from "styled-components";
-import { Button, withStyles } from "@material-ui/core";
 
 export const Title = styled.div`
   font-family: "Montserrat";
@@ -47,43 +46,31 @@ export const Flex = styled(Div)`
   ${(props) => props.row && "flex-direction: row;"}
 `;
 
-export const CustomButton = withStyles({
-  root: {
-    boxShadow: "none",
-    textTransform: "none",
-    fontSize: 16,
-    padding: "6px 12px",
-    border: "1px solid",
-    lineHeight: 1.5,
-    backgroundColor: "#0063cc",
-    borderColor: "#0063cc",
-    fontFamily: [
-      "-apple-system",
-      "BlinkMacSystemFont",
-      '"Segoe UI"',
-      "Roboto",
-      '"Helvetica Neue"',
-      "Arial",
-      "sans-serif",
-      '"Apple Color Emoji"',
-      '"Segoe UI Emoji"',
-      '"Segoe UI Symbol"',
-    ].join(","),
-    "&:hover": {
-      backgroundColor: "#0069d9",
-      borderColor: "#0062cc",
-      boxShadow: "none",
-    },
-    "&:active": {
-      boxShadow: "none",
-      backgroundColor: "#0062cc",
-      borderColor: "#005cbf",
-    },
-    "&:focus": {
-      boxShadow: "0 0 0 0.2rem rgba(0,123,255,.5)",
-    },
-  },
-})(Button);
+const font = `
+font-family: "Montserrat";
+`
+
+export const Button = styled.button`
+  cursor:pointer;
+  color:white;
+  ${props => props.disabled? "background-color:#CFCFCF;": "background-color:#173F5F;"}
+  border:0px;
+  padding: 8px 20px;
+  border-radius:8px;
+  box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2),
+    0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0, 0, 0, 0.12);
+  font-weight: bold;
+  transition: all .1s ease-in-out;
+
+  ${props =>  !props.disabled && `
+  :hover {
+    background-color:#0f2a40;
+    transform: scale(1.1);
+  }
+  `}
+  
+  
+`;
 
 export const ConnectButton = styled.button`
   background-color: #53a653;
@@ -92,7 +79,7 @@ export const ConnectButton = styled.button`
   border-radius: 24px;
   border: 0px;
   color: white;
-  font-family: "Montserrat";
+  ${font}
   text-transform: capitalize;
   font-weight: bold;
   box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2),

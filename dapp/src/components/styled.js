@@ -9,7 +9,7 @@ export const Title = styled.div`
 
 export const Value = styled.span`
   font-family: "Montserrat";
-  font-size: 18px;
+  font-size: 20px;
   font-weight: bold;
 `;
 
@@ -103,3 +103,7 @@ export const ConnectButton = styled.button`
     }
   }}
 `;
+
+export const H3 = styled.h3`
+  border:2px solid red;
+`

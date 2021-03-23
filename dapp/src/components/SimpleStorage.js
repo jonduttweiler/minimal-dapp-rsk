@@ -57,7 +57,7 @@ function SimpleStorage() {
   const contractRef = useRef();
   const accountsRef = useRef();
 
-  const [networkId, setNetworkId] = useState();
+  const [chainId, setChainId] = useState();
 
   const address = "0x107737cE1cdA492BE0398A82645C153c1B9c7Dc3";
 
@@ -71,7 +71,7 @@ function SimpleStorage() {
   const [inputValue, setInputValue] = useState("");
 
   const targetNetwork = networks[targetNetworkId];
-  const currentNetwork = networks[networkId] || networkId;
+  const currentNetwork = networks[chainId] || chainId;
 
   async function connect() {
     let web3;
@@ -90,8 +90,11 @@ function SimpleStorage() {
         console.log("access granted");
         setConnected(true);
 
+        const balance = await web3.eth.getBalance(accounts[0]);
+        setBalance(balance);
+        
+
         ethereum.on("connect", () => {
-          console.log("%cconnect", "color:green");
           setConnected(true);
         });
         ethereum.on("disconnect", () => {
@@ -99,7 +102,8 @@ function SimpleStorage() {
         });
 
         ethereum.on("chainChanged", (chainIdHex) => {
-          setNetworkId(parseInt(chainIdHex, 16));
+          setChainId(parseInt(chainIdHex, 16));
+          updateBalance();
         });
 
         ethereum.on("accountsChanged", (accounts) => {
@@ -116,7 +120,7 @@ function SimpleStorage() {
     if (web3) {
       web3Ref.current = web3;
       const networkId = await web3.eth.net.getId(); //Esto creo que no se hace mas asi, hay que pedirselo al provider
-      setNetworkId(networkId);
+      setChainId(networkId);
       return web3;
     }
   }
@@ -131,14 +135,16 @@ function SimpleStorage() {
       return accounts;
     }
   }
-  useEffect(() => {
-    async function updateBalance() {
-      const web3 = web3Ref.current;
-      if (web3) {
-        const balance = await web3.eth.getBalance(accounts[0]);
-        setBalance(balance);
-      }
+
+  async function updateBalance() {
+    const web3 = web3Ref.current;
+    if (web3 && accounts[0]) {
+      const balance = await web3.eth.getBalance(accounts[0]);
+      setBalance(balance);
     }
+  }
+
+  useEffect(() => {
     updateBalance();
   }, [accounts]);
 
@@ -223,7 +229,7 @@ function SimpleStorage() {
         <Grid
           container
           direction="column"
-          justify="flex-start"
+          justify="center"
           alignItems="center"
           spacing={3}
         >
@@ -244,14 +250,14 @@ function SimpleStorage() {
           </Grid>
 
           <Grid item>
-            <Container>
+            
               <div>
-                Current network: <i>{currentNetwork}</i>
+                Current chain: <i>{currentNetwork}</i>
               </div>
               <div>
-                Target network: <i>{targetNetwork}</i>.
+                Target chain: <i>{targetNetwork}</i>.
               </div>
-              {networkId && networkId !== targetNetworkId && (
+              {chainId && chainId !== targetNetworkId && (
                 <Div mt="15px">
                   <Alert severity="warning">
                     <AlertTitle>Incorrect network</AlertTitle>
@@ -261,28 +267,31 @@ function SimpleStorage() {
                   </Alert>
                 </Div>
               )}
-            </Container>
+            
           </Grid>
 
-          <Grid item>
-            <Grid item>Accounts:</Grid>
-            <Flex j="center" p="5px">
+          <Grid item style={{width:'100%'}}>
+            <Flex>Accounts:</Flex>
+            <Flex>
               {accounts.map((account, idx) => (
                 <div key={idx}>{account}</div>
               ))}
             </Flex>
-            <Grid item>Balance:</Grid>
+            <Flex p="10px"></Flex>
+
+            <Flex>Balance:</Flex>
             {balance && (
               <div>
                 <strong>{web3Ref?.current?.utils.fromWei(balance)}</strong>
                 &nbsp;
-                {tokens[networkId]}
+                {tokens[chainId]}
               </div>
             )}
+
           </Grid>
 
           {/* Separator para el contract __ */}
-          <Grid item>
+          <Grid item style={{width:'100%'}}>
             <div>Contract address: ({targetNetwork})</div>
             <a
               href={`https://explorer.testnet.rsk.co/address/${address}`}
@@ -293,9 +302,11 @@ function SimpleStorage() {
             </a>
           </Grid>
 
-          <Grid item>
-            <Grid item>Value:</Grid>
-            <Flex j="center" p="5px">
+          <Grid item style={{width:'100%'}}>
+            <Grid item style={{width:'100%'}}>
+              Value:
+            </Grid>
+            <Flex j="center" p="3px">
               <Value>{value}</Value>
             </Flex>
           </Grid>

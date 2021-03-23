@@ -92,7 +92,6 @@ function SimpleStorage() {
 
         const balance = await web3.eth.getBalance(accounts[0]);
         setBalance(balance);
-        
 
         ethereum.on("connect", () => {
           setConnected(true);
@@ -117,10 +116,22 @@ function SimpleStorage() {
       web3 = new Web3(window.web3.currentProvider);
     }
 
+    //determine chain id
+    if (window.ethereum) {
+      //https://eips.ethereum.org/EIPS/eip-695
+      const ethereum = window.ethereum;
+      const chainId = await ethereum.request({
+        method: "eth_chainId",
+      });
+      setChainId(parseInt(chainId, 16));
+    } else if (web3) {
+      //deprecated
+      const networkId = await web3.eth.net.getId();
+      setChainId(networkId);
+    }
+
     if (web3) {
       web3Ref.current = web3;
-      const networkId = await web3.eth.net.getId(); //Esto creo que no se hace mas asi, hay que pedirselo al provider
-      setChainId(networkId);
       return web3;
     }
   }
@@ -129,7 +140,8 @@ function SimpleStorage() {
     //ver si ya hay algo en accounts
     if (!accounts) {
       const web3 = web3Ref.current;
-      const accounts = await web3.eth.getAccounts();
+      const accounts = await web3.eth.getAccounts(); //TODO: Si existe el provider, consultarlo mediante ethereum.request
+
       accountsRef.current = accounts;
       setAccounts(accounts);
       return accounts;
@@ -250,27 +262,28 @@ function SimpleStorage() {
           </Grid>
 
           <Grid item>
-            
-              <div>
-                Current chain: <i>{currentNetwork}</i>
-              </div>
-              <div>
-                Target chain: <i>{targetNetwork}</i>.
-              </div>
-              {chainId && chainId !== targetNetworkId && (
-                <Div mt="15px">
-                  <Alert severity="warning">
-                    <AlertTitle>Incorrect network</AlertTitle>
-                    <div>
-                      Please, switch to <strong>{targetNetwork}</strong>
-                    </div>
-                  </Alert>
-                </Div>
-              )}
-            
+            {currentNetwork && (
+              <Alert severity="info">
+                Current chain: <b>({chainId})</b> <i>{currentNetwork}</i>
+              </Alert>
+            )}
+
+            {/* <Flex m="5px">
+              Target chain: <i> &nbsp;{targetNetwork}</i>
+            </Flex> */}
+            {chainId && chainId !== targetNetworkId && (
+              <Div mt="15px">
+                <Alert severity="warning">
+                  <AlertTitle>Incorrect network</AlertTitle>
+                  <div>
+                    Please, switch to <strong>{targetNetwork}</strong>
+                  </div>
+                </Alert>
+              </Div>
+            )}
           </Grid>
 
-          <Grid item style={{width:'100%'}}>
+          <Grid item style={{ width: "100%" }}>
             <Flex>Accounts:</Flex>
             <Flex>
               {accounts.map((account, idx) => (
@@ -287,11 +300,10 @@ function SimpleStorage() {
                 {tokens[chainId]}
               </div>
             )}
-
           </Grid>
 
           {/* Separator para el contract __ */}
-          <Grid item style={{width:'100%'}}>
+          <Grid item style={{ width: "100%" }}>
             <div>Contract address: ({targetNetwork})</div>
             <a
               href={`https://explorer.testnet.rsk.co/address/${address}`}
@@ -302,8 +314,8 @@ function SimpleStorage() {
             </a>
           </Grid>
 
-          <Grid item style={{width:'100%'}}>
-            <Grid item style={{width:'100%'}}>
+          <Grid item style={{ width: "100%" }}>
+            <Grid item style={{ width: "100%" }}>
               Value:
             </Grid>
             <Flex j="center" p="3px">

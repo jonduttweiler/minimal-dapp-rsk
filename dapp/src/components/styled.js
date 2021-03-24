@@ -27,26 +27,39 @@ export const NetworkIndicator = styled.div`
 `;
 
 export const Div = styled.div`
-  ${(props) => props.absolute && `position: absolute;`}
-  ${(props) => props.relative && `position: relative;`}
-  ${(props) => props.m && `margin: ${props.m};`}
-  ${(props) => props.mt && `margin-top: ${props.mt};`}
-  ${(props) => props.mx && `margin-left: ${props.mx};margin-right: ${props.mx};`}
-  ${(props) => props.my && `margin-top: ${props.my};margin-bottom: ${props.my};`}
-  ${(props) => props.margin && `margin: ${props.margin};`}
-  ${(props) => props.p && `padding: ${props.p};`}
-  ${(props) => props.padding && `padding: ${props.padding};`}
+  ${props => props.absolute && `position: absolute;`}
+  ${props => props.relative && `position: relative;`}
+  ${props => props.m && `margin: ${props.m};`}
+  ${props => props.mt && `margin-top: ${props.mt};`}
+  ${props => props.mx && `margin-left: ${props.mx};margin-right: ${props.mx};`}
+  ${props => props.my && `margin-top: ${props.my};margin-bottom: ${props.my};`}
+  ${props => props.margin && `margin: ${props.margin};`}
+  ${props => props.p && `padding: ${props.p};`}
+  ${props => props.padding && `padding: ${props.padding};`}
 `;
 
 export const Flex = styled(Div)`
   display: flex;
-  ${(props) => props.j && `justify-content: ${props.j};`}
-  ${(props) => props.justify && `justify-content: ${props.justify};`}
-  ${(props) => props.a && `align-content: ${props.a};`}
-  ${(props) => props.align && `align-content: ${props.align};`}
-  ${(props) => props.center && `align-content: center; justify-content:center;`}
-  ${(props) => props.column && "flex-direction: column;"}
-  ${(props) => props.row && "flex-direction: row;"}
+  ${props => props.j && `justify-content: ${props.j};`}
+  ${props => props.justify && `justify-content: ${props.justify};`}
+  ${props => props.a && `align-content: ${props.a};`}
+  ${props => props.align && `align-content: ${props.align};`}
+  ${props => props.center && `align-content: center; justify-content:center;`}
+  ${props => props.column && "flex-direction: column;"}
+  ${props => props.row && "flex-direction: row;"}
+  ${props => props.spacing && `
+      & > * {
+        ${props => props.row && `
+                  margin-left:10px;
+                  margin-right:10px;
+        `}
+        ${props => props.column && `
+                  margin-top:15px;
+                  margin-bottom:15px;
+        `}
+      }
+  `}
+  
 `;
 
 const font = `
@@ -114,12 +127,5 @@ export const Metadata = styled.div`
   overflow: auto;
   background-color: rgba(0,0,0,0.85);
   color: white;
-  width:95%;
-  @media (min-width: 768px) {
-    width:75%;
-  }
-  @media (min-width: 1020px) {
-    width:50%;
-  }
-      
+  max-width:90vw;
 `;

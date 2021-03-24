@@ -46,10 +46,8 @@ const Root = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: center;
-`;
-const Container = styled.div`
-  padding: 12px;
-  width: fit-content;
+  border: 2px solid red;
+  padding: 5px 10px;
 `;
 
 function SimpleStorage() {
@@ -133,7 +131,7 @@ function SimpleStorage() {
     if (web3) {
       web3Ref.current = web3;
       return web3;
-    }
+    } //TODO: aggregar mensaje de error
   }
 
   async function getAccounts() {
@@ -237,151 +235,148 @@ function SimpleStorage() {
 
   return (
     <Root>
-      <Container>
-        <Grid
-          container
-          direction="column"
-          justify="center"
-          alignItems="center"
-          spacing={3}
-        >
-          <Grid item>
-            <Title>Simple dapp</Title>
-          </Grid>
-          <Grid item>
-            {connected && (
-              <Alert severity="success" variant="outlined">
-                Connected
-              </Alert>
-            )}
-            {!connected && (
-              <ConnectButton outlined color="primary" onClick={connect}>
-                connect
-              </ConnectButton>
-            )}
-          </Grid>
+      <Grid
+        container
+        direction="column"
+        justify="center"
+        alignItems="center"
+        spacing={3}
+      >
+        <Grid item>
+          <Title>Simple dapp</Title>
+        </Grid>
+        <Grid item>
+          {connected && (
+            <Alert severity="success" variant="outlined">
+              Connected
+            </Alert>
+          )}
+          {!connected && (
+            <ConnectButton outlined color="primary" onClick={connect}>
+              connect
+            </ConnectButton>
+          )}
+        </Grid>
 
-          <Grid item>
-            {currentNetwork && (
-              <Alert severity="info">
-                Current chain: <b>({chainId})</b> <i>{currentNetwork}</i>
-              </Alert>
-            )}
+        <Grid item>
+          {currentNetwork && (
+            <Alert severity="info">
+              Current chain: <b>({chainId})</b> <i>{currentNetwork}</i>
+            </Alert>
+          )}
 
-            {/* <Flex m="5px">
+          {/* <Flex m="5px">
               Target chain: <i> &nbsp;{targetNetwork}</i>
             </Flex> */}
-            {chainId && chainId !== targetNetworkId && (
-              <Div mt="15px">
-                <Alert severity="warning">
-                  <AlertTitle>Incorrect network</AlertTitle>
-                  <div>
-                    Please, switch to <strong>{targetNetwork}</strong>
-                  </div>
-                </Alert>
-              </Div>
-            )}
-          </Grid>
+          {chainId && chainId !== targetNetworkId && (
+            <Div mt="15px">
+              <Alert severity="warning">
+                <AlertTitle>Incorrect network</AlertTitle>
+                <div>
+                  Please, switch to <strong>{targetNetwork}</strong>
+                </div>
+              </Alert>
+            </Div>
+          )}
+        </Grid>
 
+        <Grid item style={{ width: "100%" }}>
+          <Flex>Accounts:</Flex>
+          <Flex>
+            {accounts.map((account, idx) => (
+              <div key={idx}>{account}</div>
+            ))}
+          </Flex>
+          <Flex p="10px"></Flex>
+
+          <Flex>Balance:</Flex>
+          {balance && (
+            <div>
+              <strong>{web3Ref?.current?.utils.fromWei(balance)}</strong>
+              &nbsp;
+              {tokens[chainId]}
+            </div>
+          )}
+        </Grid>
+
+        {/* Separator para el contract __ */}
+        <Grid item style={{ width: "100%" }}>
+          <div>Contract address: ({targetNetwork})</div>
+          <a
+            href={`https://explorer.testnet.rsk.co/address/${address}`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            {address}
+          </a>
+        </Grid>
+
+        <Grid item style={{ width: "100%" }}>
           <Grid item style={{ width: "100%" }}>
-            <Flex>Accounts:</Flex>
-            <Flex>
-              {accounts.map((account, idx) => (
-                <div key={idx}>{account}</div>
-              ))}
-            </Flex>
-            <Flex p="10px"></Flex>
-
-            <Flex>Balance:</Flex>
-            {balance && (
-              <div>
-                <strong>{web3Ref?.current?.utils.fromWei(balance)}</strong>
-                &nbsp;
-                {tokens[chainId]}
-              </div>
-            )}
+            Value:
           </Grid>
-
-          {/* Separator para el contract __ */}
-          <Grid item style={{ width: "100%" }}>
-            <div>Contract address: ({targetNetwork})</div>
-            <a
-              href={`https://explorer.testnet.rsk.co/address/${address}`}
-              target="_blank"
-              rel="noreferrer"
+          <Flex j="center" p="3px">
+            <Value>{value}</Value>
+          </Flex>
+        </Grid>
+        <Grid container direction="column" alignItems="center" spacing={2}>
+          <Grid item>
+            <input
+              style={{ textAlign: "right" }}
+              type="text"
+              pattern="[0-9]*"
+              value={inputValue}
+              onChange={(e) => {
+                const re = /^[0-9\b]+$/;
+                if (e.target.value === "" || re.test(e.target.value)) {
+                  setInputValue(e.target.value);
+                }
+              }}
+            />
+          </Grid>
+          <Grid item>
+            <Button
+              disabled={loading || !connected}
+              variant="contained"
+              color="primary"
+              onClick={setNewValue}
             >
-              {address}
-            </a>
+              Set value
+            </Button>
+          </Grid>
+          <Grid item>
+            <Grid container direction="row" justify="center">
+              {loading && (
+                <CircularProgress
+                  size={25}
+                  color="secondary"
+                ></CircularProgress>
+              )}
+              <TransactionStatus>{txStatus?.status}</TransactionStatus>
+            </Grid>
           </Grid>
 
           <Grid item style={{ width: "100%" }}>
-            <Grid item style={{ width: "100%" }}>
-              Value:
-            </Grid>
-            <Flex j="center" p="3px">
-              <Value>{value}</Value>
-            </Flex>
-          </Grid>
-          <Grid container direction="column" alignItems="center" spacing={2}>
-            <Grid item>
-              <input
-                style={{ textAlign: "right" }}
-                type="text"
-                pattern="[0-9]*"
-                value={inputValue}
-                onChange={(e) => {
-                  const re = /^[0-9\b]+$/;
-                  if (e.target.value === "" || re.test(e.target.value)) {
-                    setInputValue(e.target.value);
-                  }
-                }}
-              />
-            </Grid>
-            <Grid item>
-              <Button
-                disabled={loading || !connected}
-                variant="contained"
-                color="primary"
-                onClick={setNewValue}
-              >
-                Set value
-              </Button>
-            </Grid>
-            <Grid item>
-              <Grid container direction="row" justify="center">
-                {loading && (
-                  <CircularProgress
-                    size={25}
-                    color="secondary"
-                  ></CircularProgress>
-                )}
-                <TransactionStatus>{txStatus?.status}</TransactionStatus>
-              </Grid>
-            </Grid>
-            <Grid item>
-              <Grid container direction="column">
-                <Grid
-                  item
-                  style={{
-                    padding: "5px 15px",
-                    maxWidth: "100%",
-                    overflow: "auto",
-                    backgroundColor: "rgba(0,0,0,0.8)",
-                    color: "white",
-                  }}
-                >
-                  <div style={{ width: "530px" }}>
-                    <StringifiedObject
-                      object={txStatus?.metadata}
-                    ></StringifiedObject>
-                    {/* {txStatus?.metadata} */}
-                  </div>
-                </Grid>
-              </Grid>
+            <Grid
+              item
+              style={{
+                padding: "5px 15px",
+                maxWidth: "100%",
+                overflow: "auto",
+                backgroundColor: "rgba(0,0,0,0.8)",
+                color: "white",
+              }}
+            >
+              <div style={{ width: "100%" }}>
+                <StringifiedObject
+                  object={txStatus?.metadata}
+                ></StringifiedObject>
+                {/* {txStatus?.metadata} */}
+              </div>
             </Grid>
           </Grid>
         </Grid>
-      </Container>
+      </Grid>
     </Root>
   );
 }

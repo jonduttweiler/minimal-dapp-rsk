@@ -6,6 +6,7 @@ const AppWrapper = styled.div`
   height:100vh;
   box-sizing:border-box;
   position:relative;
+  border:2px solid palevioletred;
 `
 
 function App() {

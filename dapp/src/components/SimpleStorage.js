@@ -47,7 +47,15 @@ const Root = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: center;
-  padding: 5px 10px;
+  align-items:flex-start;
+  padding: 25px 10px;
+
+  @media (min-width: 768px) {
+    width:75%;
+  }
+  @media (min-width: 1020px) {
+    width:45%;
+  }
 `;
 
 function SimpleStorage() {

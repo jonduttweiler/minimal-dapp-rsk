@@ -13,6 +13,7 @@ import {
   Button,
   Flex,
   ConnectButton,
+  Metadata,
 } from "./styled";
 
 import SimpleStorageArtifact from "../artifacts/SimpleStorage.json";
@@ -21,7 +22,7 @@ import StringifiedObject from "./StringifiedObject";
 const contractAbi = SimpleStorageArtifact.abi;
 const targetNetworkId = 31;
 
-const networks = {
+const networks = { 
   1: "Ethereum Mainnet",
   3: "Ropsten Test Network",
   4: "Rinkeby Test Network",
@@ -46,7 +47,6 @@ const Root = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: center;
-  border: 2px solid red;
   padding: 5px 10px;
 `;
 
@@ -319,7 +319,13 @@ function SimpleStorage() {
             <Value>{value}</Value>
           </Flex>
         </Grid>
-        <Grid container direction="column" alignItems="center" spacing={2}>
+        <Grid 
+          container 
+          direction="column" 
+          alignItems="center" 
+          spacing={2}
+           style={{ width: "100%" }}
+        >
           <Grid item>
             <input
               style={{ textAlign: "right" }}
@@ -356,25 +362,11 @@ function SimpleStorage() {
             </Grid>
           </Grid>
 
-          <Grid item style={{ width: "100%" }}>
-            <Grid
-              item
-              style={{
-                padding: "5px 15px",
-                maxWidth: "100%",
-                overflow: "auto",
-                backgroundColor: "rgba(0,0,0,0.8)",
-                color: "white",
-              }}
-            >
-              <div style={{ width: "100%" }}>
-                <StringifiedObject
-                  object={txStatus?.metadata}
-                ></StringifiedObject>
-                {/* {txStatus?.metadata} */}
-              </div>
-            </Grid>
-          </Grid>
+          
+            <Metadata>
+              <StringifiedObject object={txStatus?.metadata} />
+            </Metadata>
+          
         </Grid>
       </Grid>
     </Root>

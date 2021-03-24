@@ -107,3 +107,19 @@ export const ConnectButton = styled.button`
 export const H3 = styled.h3`
   border:2px solid red;
 `
+
+export const Metadata = styled.div`
+  box-sizing:border-box;
+  padding: 5px 15px;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.85);
+  color: white;
+  width:95%;
+  @media (min-width: 768px) {
+    width:75%;
+  }
+  @media (min-width: 1020px) {
+    width:50%;
+  }
+      
+`;

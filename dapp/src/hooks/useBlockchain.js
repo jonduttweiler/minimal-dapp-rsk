@@ -15,11 +15,6 @@ export default function useBlockchain() {
   const addError = (error) => setErrors((errors) => [...errors, error]);
   const clearErrors = () => setErrors([]);
 
-  useEffect(() => {
-    for (let i = 0; i < 4; i++) {
-      addError(new Error("jona rules!"));
-    }
-  }, []);
 
   async function connect() {
     let web3;

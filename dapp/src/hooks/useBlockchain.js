@@ -3,12 +3,16 @@ import { useRef, useState, useEffect } from "react";
 
 export default function useBlockchain() {
   const web3Ref = useRef();
-  const accountsRef = useRef();
-
+  
   const [connected, setConnected] = useState(false);
+  
+  const [web3, setWeb3] = useState();
   const [chainId, setChainId] = useState();
   const [accounts, setAccounts] = useState([]);
   const [balance, setBalance] = useState();
+
+  const [error, setError] = useState();
+  const clearError = () => setError();
 
   async function connect() {
     let web3;
@@ -16,6 +20,7 @@ export default function useBlockchain() {
       try {
         const ethereum = window.ethereum;
         web3 = new Web3(ethereum);
+        setWeb3(web3);
         //https://eips.ethereum.org/EIPS/eip-1102
         //https://eips.ethereum.org/EIPS/eip-1193
         const response = await ethereum.request({
@@ -23,7 +28,6 @@ export default function useBlockchain() {
         });
         const accounts = response || [];
         setAccounts(accounts);
-        accountsRef.current = accounts;
         console.log("access granted");
         web3Ref.current = web3;
         setConnected(true);
@@ -47,8 +51,9 @@ export default function useBlockchain() {
           setAccounts(accounts);
         });
       } catch (err) {
-        console.log("access denied");
+        console.log(err);
         setConnected(false);
+        setError(err);
       }
     } else if (window.web3) {
       web3 = new Web3(window.web3.currentProvider);
@@ -94,8 +99,9 @@ export default function useBlockchain() {
     chainId,
     accounts,
     balance,
-    web3Ref,
-    accountsRef
+    web3,
+    error,
+    clearError
   };
 }
 

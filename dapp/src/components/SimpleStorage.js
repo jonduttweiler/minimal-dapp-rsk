@@ -13,6 +13,7 @@ import {
   Button,
   Flex,
   ConnectButton,
+  ClearErrorButton,
   Metadata,
 } from "./styled";
 
@@ -58,16 +59,25 @@ const Root = styled.div`
   }
 `;
 
+const Error = styled.div`
+  border: 2px solid tomato;
+  width: 100%;
+  padding: 10px;
+  color: tomato;
+`;
+
 function SimpleStorage() {
   const contractRef = useRef();
 
   const {
-    web3Ref,
     connect,
     connected,
+    web3,
     chainId,
     accounts,
     balance,
+    error,
+    clearError,
   } = useBlockchain();
 
   const address = "0x107737cE1cdA492BE0398A82645C153c1B9c7Dc3";
@@ -92,16 +102,15 @@ function SimpleStorage() {
   }
 
   async function initContract() {
-        console.log("init contract")
+    console.log("init contract");
     try {
-      if (web3Ref.current) {
-        const web3 = web3Ref.current;
+      if (web3) {
         const contract = new web3.eth.Contract(contractAbi, address);
         contractRef.current = contract;
         const value = await contract.methods.get().call();
         setValue(value);
       } else {
-        console.log("web3 is undefined")
+        console.log("web3 is undefined");
       }
     } catch (err) {
       console.log(err);
@@ -112,7 +121,7 @@ function SimpleStorage() {
     if (connected) {
       initContract();
     }
-  }, [connected,]);
+  }, [connected]);
 
   async function setNewValue() {
     try {
@@ -214,7 +223,7 @@ function SimpleStorage() {
           <Flex>Balance:</Flex>
           {balance && (
             <div>
-              <strong>{web3Ref?.current?.utils.fromWei(balance)}</strong>
+              <strong>{web3?.utils.fromWei(balance)}</strong>
               &nbsp;
               {tokens[chainId]}
             </div>
@@ -269,10 +278,37 @@ function SimpleStorage() {
           )}
           <TransactionStatus>{txStatus?.status}</TransactionStatus>
         </Flex>
+        {txStatus?.status && (
+          <Metadata>
+            <StringifiedObject object={txStatus?.metadata} />
+          </Metadata>
+        )}
 
-        <Metadata>
-          <StringifiedObject object={txStatus?.metadata} />
-        </Metadata>
+        {error && (
+          <Error>
+            <div>
+              <div>
+                <b>Type:</b>
+                </div>
+                <div>
+                   {error.name}
+                </div>
+                <div>
+                  <b>Message:</b>
+                </div>
+                <div>
+                {error.message}
+                </div>
+            </div>
+            <div>
+              <Flex center m="10px">
+              <Button onClick={clearError}>Clear error</Button>
+
+              </Flex>
+
+            </div>
+          </Error>
+        )}
       </Flex>
     </Root>
   );

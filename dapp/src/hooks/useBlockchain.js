@@ -3,16 +3,23 @@ import { useRef, useState, useEffect } from "react";
 
 export default function useBlockchain() {
   const web3Ref = useRef();
-  
+
   const [connected, setConnected] = useState(false);
-  
+
   const [web3, setWeb3] = useState();
   const [chainId, setChainId] = useState();
   const [accounts, setAccounts] = useState([]);
   const [balance, setBalance] = useState();
 
-  const [error, setError] = useState();
-  const clearError = () => setError();
+  const [errors, setErrors] = useState([]);
+  const addError = (error) => setErrors((errors) => [...errors, error]);
+  const clearErrors = () => setErrors([]);
+
+  useEffect(() => {
+    for (let i = 0; i < 4; i++) {
+      addError(new Error("jona rules!"));
+    }
+  }, []);
 
   async function connect() {
     let web3;
@@ -53,10 +60,14 @@ export default function useBlockchain() {
       } catch (err) {
         console.log(err);
         setConnected(false);
-        setError(err);
+        addError(err);
       }
     } else if (window.web3) {
       web3 = new Web3(window.web3.currentProvider);
+    } else {
+      const error = new Error("Provider Error");
+      error.message = "No provider was found";
+      addError(error);
     }
 
     //determine chain id
@@ -91,8 +102,6 @@ export default function useBlockchain() {
     updateBalance();
   }, [accounts]);
 
-
-
   return {
     connect,
     connected,
@@ -100,9 +109,7 @@ export default function useBlockchain() {
     accounts,
     balance,
     web3,
-    error,
-    clearError
+    errors,
+    clearErrors,
   };
 }
-
-

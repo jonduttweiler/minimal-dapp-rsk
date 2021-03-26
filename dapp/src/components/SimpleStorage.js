@@ -61,6 +61,7 @@ const Root = styled.div`
 
 const Error = styled.div`
   border: 2px solid tomato;
+  box-sizing:border-box;
   width: 100%;
   padding: 10px;
   color: tomato;
@@ -76,8 +77,8 @@ function SimpleStorage() {
     chainId,
     accounts,
     balance,
-    error,
-    clearError,
+    errors,
+    clearErrors,
   } = useBlockchain();
 
   const address = "0x107737cE1cdA492BE0398A82645C153c1B9c7Dc3";
@@ -284,30 +285,27 @@ function SimpleStorage() {
           </Metadata>
         )}
 
-        {error && (
-          <Error>
-            <div>
-              <div>
-                <b>Type:</b>
-                </div>
-                <div>
-                   {error.name}
-                </div>
-                <div>
-                  <b>Message:</b>
-                </div>
-                <div>
-                {error.message}
-                </div>
-            </div>
-            <div>
-              <Flex center m="10px">
-              <Button onClick={clearError}>Clear error</Button>
+        {errors?.length > 0 && (
+          <>
+            <Flex j="flex-end">
+              <Button onClick={clearErrors}>Clear errors</Button>
+            </Flex>
 
-              </Flex>
-
-            </div>
-          </Error>
+            {errors.map((error, idx) => (
+              <Error key={idx}>
+                <div>
+                  <div>
+                    <b>Type:</b>
+                  </div>
+                  <div>{error.name}</div>
+                  <div>
+                    <b>Message:</b>
+                  </div>
+                  <div>{error.message}</div>
+                </div>
+              </Error>
+            ))}
+          </>
         )}
       </Flex>
     </Root>
